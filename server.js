@@ -30,7 +30,6 @@ mongoose
   })
   .then(() => {
     console.log("Successfully connected to MongoDB.");
-  
   })
   .catch(err => {
     console.error("Connection error", err);
@@ -45,7 +44,6 @@ require("./app/routes/entry.routes")(app);
 require("./app/routes/trade.routes")(app);
 
 require("./app/schedulers/assignWinners")();
-
 // Serve React
 app.use(express.static(path.join(__dirname, 'build')));
 
