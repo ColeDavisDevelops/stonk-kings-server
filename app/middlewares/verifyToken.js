@@ -10,7 +10,7 @@ const verifyToken = (req, res, next) => {
 
   jwt.verify(token, config.secret, (err, decoded) => {
     if (err) {
-      return res.status(401).send({ message: err });
+      res.status(401).send(err);
     }
     req.userId = decoded.id;
     next();

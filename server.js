@@ -1,18 +1,18 @@
 const express = require("express");
-const path = require('path');
+const path = require("path");
 const bodyParser = require("body-parser");
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 mongoose.Promise = global.Promise;
 const cors = require("cors");
 const dbConfig = require("./app/config/db.config");
 const app = express();
 
-mongoose.set('useNewUrlParser', true);
-mongoose.set('useFindAndModify', false);
-mongoose.set('useCreateIndex', true);
+mongoose.set("useNewUrlParser", true);
+mongoose.set("useFindAndModify", false);
+mongoose.set("useCreateIndex", true);
 
 var corsOptions = {
-  origin: "http://localhost:3001"
+  origin: "http://localhost:3001",
 };
 
 app.use(cors(corsOptions));
@@ -24,14 +24,17 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 mongoose
-  .connect(`mongodb+srv://user:${dbConfig.PASSWORD}@cluster0-4isuu.mongodb.net/${dbConfig.DB}?retryWrites=true&w=majority`, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  })
+  .connect(
+    `mongodb+srv://user:${dbConfig.PASSWORD}@cluster0-4isuu.mongodb.net/${dbConfig.DB}?retryWrites=true&w=majority`,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  )
   .then(() => {
     console.log("Successfully connected to MongoDB.");
   })
-  .catch(err => {
+  .catch((err) => {
     console.error("Connection error", err);
     process.exit();
   });
@@ -45,13 +48,13 @@ require("./app/routes/trade.routes")(app);
 
 require("./app/schedulers/assignWinners")();
 // Serve React
-app.use(express.static(path.join(__dirname, 'build')));
+app.use(express.static(path.join(__dirname, "build")));
 
-app.get('/*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+app.get("/*", (req, res) => {
+  res.sendFile(path.join(__dirname, "build", "index.html"));
 });
 
 // set port, listen for requests
-app.listen(process.env.PORT, () => {
-  console.log(`Server is running on port ${process.env.port}.`);
+app.listen(3000, () => {
+  console.log(`Server is running on port 3000.`);
 });

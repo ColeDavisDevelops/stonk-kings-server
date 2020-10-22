@@ -16,6 +16,8 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.5.9",
     "mongoose": "^5.9.24",
-    "mongoose-data-seed": "^2.1.6"
+    "mongoose-data-seed": "^2.1.6",
+    "mongoose-unique-validator": "^2.0.3",
+    "nodemon": "^2.0.6"
   }
 }
