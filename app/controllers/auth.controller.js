@@ -10,79 +10,79 @@ exports.signup = async (req, res) => {
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, 8),
   });
-
   try {
     const result = await user.save();
     var token = jwt.sign({ id: user.id }, config.secret, {
       expiresIn: 86400, // 24 hours
     });
+    const response = result._doc;
+    delete response.password;
     res.status(200).send({
-      ...result._doc,
+      ...response,
       accessToken: token,
     });
   } catch (ex) {
-    const errMessages = [];
-    for (let field in ex.errors) {
-      errMessages.push(ex.errors[field].message);
-    }
-    res.status(400).send(errMessages);
+    const formattedErrObj = Object.keys(ex.errors).reduce((hash, key) => {
+      switch (key) {
+        case "username":
+          hash["username"] = "Sorry, this username is already in use!";
+          break;
+        case "email":
+          hash["email"] = "Sorry, this email is already in use!";
+          break;
+        default:
+          break;
+      }
+      return hash;
+    }, {});
+    res.status(400).send(formattedErrObj);
   }
 };
 
-exports.signin = (req, res) => {
-  User.findOne({
-    username: req.body.username,
-  }).exec((err, user) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
+exports.signin = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      username: req.body.username,
+    });
 
-    if (!user) {
-      return res.status(404).send({ message: "User Not found." });
-    }
+    if (!user)
+      res.status(404).send({ message: "Invalid username or password!" });
 
     var passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
-
-    if (!passwordIsValid) {
-      return res.status(401).send({
-        accessToken: null,
-        message: "Invalid Password!",
-      });
-    }
+    if (!passwordIsValid)
+      res.status(401).send({ message: "Invalid username or password!" });
 
     var token = jwt.sign({ id: user.id }, config.secret, {
       expiresIn: 86400, // 24 hours
     });
 
+    const response = user._doc;
+    delete response.password;
     res.status(200).send({
-      id: user._id,
-      avatar: user.avatar,
-      username: user.username,
-      accountBalance: user.accountBalance,
-      friends: user.friends,
-      entries: user.entries,
-      email: user.email,
+      ...response,
       accessToken: token,
     });
-  });
+  } catch (err) {
+    res.status(500).send({ message: err });
+  }
 };
 
 exports.getUserWithToken = async (req, res) => {
-  const user = await User.findById(req.userId);
-  if (!user) return res.send({ error: "token expired" });
-  var token = jwt.sign({ id: user.id }, config.secret, {
-    expiresIn: 86400, // 24 hours
-  });
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) res.send({ error: "token expired" });
 
-  res.status(200).send({
-    id: user._id,
-    avatar: user.avatar,
-    username: user.username,
-    accountBalance: user.accountBalance,
-    friends: user.friends,
-    entries: user.entries,
-    email: user.email,
-    accessToken: token,
-  });
+    var token = jwt.sign({ id: user.id }, config.secret, {
+      expiresIn: 86400, // 24 hours
+    });
+
+    const response = user._doc;
+    delete response.password;
+    res.status(200).send({
+      ...response,
+      accessToken: token,
+    });
+  } catch (err) {
+    res.status(500).send(err);
+  }
 };
